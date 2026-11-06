@@ -3,6 +3,19 @@ const app = express();
 
 app.use(express.json());
 
+// Security Gate: Reject requests without the authorized Genesys Bearer token
+app.use((req, res, next) => {
+  if (req.path === '/') return next(); // Allow health check
+  
+  const authHeader = req.headers['authorization'];
+  const EXPECTED_TOKEN = "Bearer Genesys-QA-Dev-only-1234-token";
+
+  if (authHeader !== EXPECTED_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized: Invalid or missing token." });
+  }
+  next();
+});
+
 // Helper: Exactly 6 digits validation
 const isSixDigits = (val) => /^\d{6}$/.test(String(val || '').trim());
 
